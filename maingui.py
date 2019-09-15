@@ -1,11 +1,11 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QInputDialog, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QTabWidget, QPushButton, QWidget, QInputDialog, QLineEdit, QFileDialog
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 import startup
 import excel_import
 
-class App(QWidget):
+class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -20,20 +20,9 @@ class App(QWidget):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        
-        btnLoadFile = QPushButton('On press begins the file loading', self)
-        btnLoadFile.setToolTip('Load in an IRS File')
-        btnLoadFile.move(100, 70)
-        btnLoadFile.clicked.connect(self.LoadFile_Onclick)
-        
+        self.table_widget = MyTableWidget(self)
+        self.setCentralWidget(self.table_widget)
         self.show()
-    
-
-    @pyqtSlot()
-    def LoadFile_Onclick(self):
-        files = self.openFileNamesDialog()
-        for file in files:
-            excel_import.Import_IRS_01(self.master_state, file)
 
 
     def openFileNameDialog(self):
@@ -55,6 +44,47 @@ class App(QWidget):
         fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;Text Files (*.txt)", options=options)
         if fileName:
             print(fileName)
+
+class MyTableWidget(QWidget):
+    
+    def __init__(self, parent):
+        super(QWidget, self).__init__(parent)
+        self.layout = QVBoxLayout(self)
+        
+        # Initialize tab screen
+        self.tabs = QTabWidget()
+        self.child_tab = QWidget()
+        self.irs_tab = QWidget()
+        self.report_tab = QWidget()
+        self.tabs.resize(500,200)
+        
+        # Add tabs
+        self.tabs.addTab(self.child_tab,"Children")
+        self.tabs.addTab(self.irs_tab,"IRS")
+        self.tabs.addTab(self.report_tab,"Reports")
+        
+        # Create first tab
+        self.irs_tab.layout = QVBoxLayout(self)
+        self.irs_tab.layout.setAlignment(Qt.AlignTop)
+        
+        btnLoadFile = QPushButton('On press begins the file loading', self)
+        btnLoadFile.setToolTip('Load in an IRS File')
+        btnLoadFile.clicked.connect(LoadFile_Onclick)
+        
+        self.btnLoadFile = btnLoadFile
+        self.irs_tab.layout.addWidget(self.btnLoadFile)
+        self.irs_tab.setLayout(self.irs_tab.layout)
+        
+        # Add tabs to widget
+        self.layout.addWidget(self.tabs)
+        self.setLayout(self.layout)
+
+
+@pyqtSlot()
+def LoadFile_Onclick(self):
+    files = self.openFileNamesDialog()
+    for file in files:
+        excel_import.Import_IRS_01(self.master_state, file)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
